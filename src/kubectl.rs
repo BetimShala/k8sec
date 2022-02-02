@@ -5,7 +5,7 @@ use std::process::Command;
 use std::str::from_utf8;
 use structopt::StructOpt;
 
-pub fn get_secrets(secret: String, context: String, namespace: String) -> Vec<Secret> {
+pub fn get_secrets(secret: &String, context: &String, namespace: &String) -> Vec<Secret> {
     if !check_if_namespace_exists(&namespace, &context) {
         panic!(
             "Error from server (NotFound): namespace '{}' not found",
@@ -28,7 +28,8 @@ pub fn get_secrets(secret: String, context: String, namespace: String) -> Vec<Se
             name: key.to_string(),
             value: from_utf8(&decode(value.as_str().unwrap()).unwrap())
                 .unwrap()
-                .to_string(),
+                .to_string()
+                .replace("\n", ""),
         });
     }
 
