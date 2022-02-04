@@ -13,12 +13,11 @@ pub fn get_secrets(secret: &String, context: &String, namespace: &String) -> Vec
         )
     }
 
-    let output = execute_command(format!(
+    let secrets_str = execute_command(format!(
         "get secret {} --context {} -n {} -o json",
         secret, context, namespace
     ));
 
-    let secrets_str = String::from_utf8_lossy(&output.stdout).into_owned();
     // Parse the string of data into serde_json::Value.
     let secrets_json: Value = serde_json::from_str(&secrets_str).unwrap();
 
@@ -37,23 +36,22 @@ pub fn get_secrets(secret: &String, context: &String, namespace: &String) -> Vec
 }
 
 fn check_if_namespace_exists(namespace: &String, context: &String) -> bool {
-    let output = execute_command(format!(
+    let namespaces_str = execute_command(format!(
         "get namespaces --context {} -o custom-columns=:metadata.name",
         context
     ));
-    let namespaces_str = String::from_utf8_lossy(&output.stdout).into_owned();
     let namespaces = namespaces_str.split('\n').collect::<Vec<&str>>();
     return namespaces.iter().any(|&n| n == namespace);
 }
 
-fn execute_command(command: String) -> std::process::Output {
+fn execute_command(command: String) -> String {
     let mut cmd = Command::new("sh");
     let output = cmd
         .arg("-c")
         .arg(format!("kubectl {}", command))
         .output()
         .expect("kubectl command failed to start");
-    return output;
+    return String::from_utf8_lossy(&output.stdout).into_owned();
 }
 
 #[derive(Debug, StructOpt, Deserialize, Serialize)]
